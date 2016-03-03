@@ -1,0 +1,66 @@
+#!/bin/bash
+
+sep() {
+    fg=$1
+    bg=$2
+    rest=$3
+    if [ -n "$rest" ] ; then
+        rest=${rest//,/;}
+        rest=";$rest"
+    fi
+    echo -n ' '
+    cutstart='\['
+    cutstop='\]'
+    arrowset=$cutstart'\e['$(( bg - 10 ))';7;21m'$cutstop
+    arrow=''
+    arrowend=$cutstart'\e['$fg';'$bg$rest';27m'$cutstop
+    echo -ne $arrowset$arrow$arrowend
+}
+
+col() {
+    args=$fg\;$bg
+    if [ -n "$3" ] ; then
+        rest=$3
+        args+=\;${rest//,/;}
+    fi
+    cutstart='\['
+    color='\e['$args'm'
+    cutstop='\]'
+    echo -ne $cutstart$color$cutstop
+}
+
+check () {
+    read temp_var
+    args=$@
+    args=${args//pinput/$temp_var}
+    test $args && echo "$temp_var"
+}
+
+__prompt_bashline() {
+    PS1=''
+
+    while read line ; do
+        [[ $line == \#* ]] && continue
+        opts=`echo $line | cut -d';' -f1`
+        block=`echo "$line" | cut -d';' -f2-`
+        fg=`echo "$opts" | cut -d',' -f1`
+        bg=`echo "$opts" | cut -d',' -f2`
+        rest=`echo "$opts" | cut -d',' -f3-`
+        if [[ "$block" != \\* ]] ; then
+            result=`eval $block`
+        else
+            result=$block
+        fi
+        if [ -n "$result" ] ; then
+            if [ -n "$PS1" ] ; then
+                PS1+="$(sep $fg $bg "$rest") $result"
+            else
+                PS1+="$(col $fg $bg "$rest") $result"
+            fi
+        fi
+    done < ~/.config/bashline/blocks
+
+    PS1+="$(sep 97 40)\[\e[0m\]"
+}
+
+export PROMPT_COMMAND=__prompt_bashline

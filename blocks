@@ -1,0 +1,5 @@
+97,43,1;[ -n "$SSH_TTY" ] && echo $HOSTNAME
+97,44,1;\\u
+97,47;git branch 2>/dev/null | grep '*' | cut -c 3-
+97,100;\\w
+97,101;jobs | wc -l | check pinput -gt 0
