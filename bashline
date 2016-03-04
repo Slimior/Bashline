@@ -36,7 +36,7 @@ check () {
     test $args && echo "$temp_var"
 }
 
-__bashline_load_blocks() {
+bashline_load_blocks() {
     bashline_fgs=()
     bashline_bgs=()
     bashline_modifs=()
@@ -61,7 +61,7 @@ __bashline_load_blocks() {
     done < $1
 }
 
-__prompt_bashline() {
+bashline_prompt() {
     PS1=''
 
     for index in `seq 0 ${#bashline_bgs[*]}`; do
@@ -78,6 +78,22 @@ __prompt_bashline() {
         fi
 
         [ -z "$result" ] && continue
+        IFS=',' read -r -a options <<< "$opts"
+        for ind in `seq 0 ${#options[*]}` ; do
+            case "${options[ind]}" in
+                split*)
+                    delimiter=`echo "${options[ind]}" | cut -d':' -f2`
+                    colorfg=`echo "${options[ind]}" | cut -d':' -f3`
+                    if [ -z "$colorfg" ] ; then
+                        separator='  '
+                    else
+                        separator='\[\e['$colorfg'm\]  \[\e['$fg'm\]'
+                    fi
+                    result=${result//$delimiter/$separator}
+                    ;;
+            esac
+        done
+
 
         if [ -n "$PS1" ] ; then
             PS1+="$(bashline_hsep $fg $bg "$modif") $result"
@@ -102,7 +118,7 @@ while [[ "$#" > 0 ]] ; do
     shift
 done
 
-__bashline_load_blocks $bashline_config
+bashline_load_blocks $bashline_config
 
 
-export PROMPT_COMMAND=__prompt_bashline
+export PROMPT_COMMAND=bashline_prompt
