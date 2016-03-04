@@ -2,7 +2,9 @@ echo Copying files to default locations.
 
 cp bashline ~/.bashline
 mkdir -p ~/.config/bashline
-cp blocks ~/.config/bashline/blocks
+if [ ! -e ~/.config/bashline/blocks ] ; then
+    cp blocks ~/.config/bashline/blocks
+fi
 
 if [ -e ~/.bashrc ] ; then
     if grep bashline ~/.bashrc > /dev/null ; then
