@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sep() {
+bashline_hsep() {
     fg=$1
     bg=$2
     rest=$3
@@ -17,7 +17,7 @@ sep() {
     echo -ne $arrowset$arrow$arrowend
 }
 
-col() {
+bashline_col() {
     args=$fg\;$bg
     if [ -n "$3" ] ; then
         rest=$3
@@ -36,31 +36,73 @@ check () {
     test $args && echo "$temp_var"
 }
 
-__prompt_bashline() {
-    PS1=''
+__bashline_load_blocks() {
+    bashline_fgs=()
+    bashline_bgs=()
+    bashline_modifs=()
+    bashline_opts=()
+    bashline_blocks=()
 
     while read line ; do
         [[ $line == \#* ]] && continue
-        opts=`echo $line | cut -d';' -f1`
-        block=`echo "$line" | cut -d';' -f2-`
-        fg=`echo "$opts" | cut -d',' -f1`
-        bg=`echo "$opts" | cut -d',' -f2`
-        rest=`echo "$opts" | cut -d',' -f3-`
-        if [[ "$block" != \\* ]] ; then
-            result=`eval $block`
-        else
-            result=$block
-        fi
-        if [ -n "$result" ] ; then
-            if [ -n "$PS1" ] ; then
-                PS1+="$(sep $fg $bg "$rest") $result"
-            else
-                PS1+="$(col $fg $bg "$rest") $result"
-            fi
-        fi
-    done < ~/.config/bashline/blocks
+        cols=`echo $line | cut -d';' -f1 | xargs`
+        opts=`echo $line | cut -d';' -f2 | xargs`
+        block=`echo "$line" | cut -d';' -f3- `
 
-    PS1+="$(sep 97 40)\[\e[0m\]"
+        fg=`echo "$cols" | cut -d',' -f1`
+        bg=`echo "$cols" | cut -d',' -f2`
+        modif=`echo "$cols" | cut -d',' -f3-`
+
+        bashline_fgs+=("$fg")
+        bashline_bgs+=("$bg")
+        bashline_modifs+=("$modif")
+        bashline_opts+=("$opts")
+        bashline_blocks+=("$block")
+    done < $1
 }
+
+__prompt_bashline() {
+    PS1=''
+
+    for index in `seq 0 ${#bashline_bgs[*]}`; do
+        local fg=${bashline_fgs[index]}
+        local bg=${bashline_bgs[index]}
+        local modif=${bashline_modifs[index]}
+        local opts=${bashline_opts[index]}
+        local block=${bashline_blocks[index]}
+
+        if [[ "$block" != \\* ]] ; then
+            local result=`eval "$block"`
+        else
+            local result=$block
+        fi
+
+        [ -z "$result" ] && continue
+
+        if [ -n "$PS1" ] ; then
+            PS1+="$(bashline_hsep $fg $bg "$modif") $result"
+        else
+            PS1+="$(bashline_col $fg $bg "$modif") $result"
+        fi
+    done 
+
+    PS1+="$(bashline_hsep 97 40)\[\e[0m\]"
+}
+
+bashline_config=~/.config/bashline/blocks
+
+while [[ "$#" > 0 ]] ; do
+    key=$1
+    case $key in
+        -c)
+            shift
+            bashline_config=$1
+            ;;
+    esac
+    shift
+done
+
+__bashline_load_blocks $bashline_config
+
 
 export PROMPT_COMMAND=__prompt_bashline
