@@ -1,5 +1,10 @@
+#localhost or remote connection?
 97,42,1 ;               ;[ -n "$SSH_TTY" ] && echo $HOSTNAME
+#username, accessed by regural PS1 config \u. additional \ needed :(
 97,44,1 ;               ;\\u
+#git branch, if any present obv
 97,47   ;               ;git branch 2>/dev/null | grep '*' | sed -e 's/*//'
+#current directory, with home switched to '~'. Line is split by soft separators at '/'.
 97,100  ; split:/:37    ;pwd | sed -e "s/${HOME//\\//\\\\/}/~/g"
+#jobs counter, if any present
 97,101  ;               ;jobs | wc -l | check pinput -gt 0
