@@ -113,7 +113,7 @@ bashline_prompt() {
         fi
     done 
 
-    PS1+="$(bashline_hsep 15 0; tput sgr0)"
+    PS1+="$(bashline_hsep 15 0)"'\['"$(tput sgr0)"'\]'
 }
 
 bashline_config=~/.config/bashline/blocks
