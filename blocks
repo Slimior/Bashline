@@ -1,5 +1,5 @@
-97,42,1 ;               ;[ -n "$SSH_TTY" ] && echo $HOSTNAME
-97,44,1 ;               ;\\u
-97,47   ;               ;git branch 2>/dev/null | grep '*' | sed -e 's/*//'
-97,100  ; split:/:37    ;pwd | sed -e "s/${HOME//\\//\\\\/}/~/g"
-97,101  ;               ;jobs | wc -l | check pinput -gt 0
+15,2,bold ;               ;[ -n "$SSH_TTY" ] && echo $HOSTNAME
+15,4,bold ;               ;\\u
+15,7   ;               ;git branch 2>/dev/null | grep '*' | sed -e 's/*//'
+15,8  ; split:/:7    ;pwd | sed -e "s/${HOME//\\//\\\\/}/~/g"
+15,9  ;               ;jobs | wc -l | check pinput -gt 0

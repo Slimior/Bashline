@@ -1,32 +1,37 @@
 #!/bin/bash
 
+bashline_perform_modifiers() {
+    while [ $# -gt 0 ]; do
+        tput $1
+        shift
+    done
+}
+
 bashline_hsep() {
-    fg=$1
-    bg=$2
-    rest=$3
-    if [ -n "$rest" ] ; then
-        rest=${rest//,/;}
-        rest=";$rest"
-    fi
-    echo -n ' '
-    cutstart='\['
-    cutstop='\]'
-    arrowset=$cutstart'\e['$(( bg - 10 ))';7;21m'$cutstop
-    arrow=''
-    arrowend=$cutstart'\e['$fg';'$bg$rest';27m'$cutstop
-    echo -ne $arrowset$arrow$arrowend
+    local fg=$1
+    shift
+    local bg=$1
+    shift
+    local modifiers=$(bashline_perform_modifiers $@)
+    local cutstart='\['
+    local cutstop='\]'
+    #inverse colors, and set front as new background
+    local arrowset=$cutstart$(tput setaf $bg; tput rev)$cutstop
+    local arrow=''
+    local arrowend=$cutstart$(tput sgr0; tput setaf $fg; tput setab $bg)$modifiers$cutstop
+    echo -ne ' '$arrowset$arrow$arrowend
 }
 
 bashline_col() {
-    args=$fg\;$bg
-    if [ -n "$3" ] ; then
-        rest=$3
-        args+=\;${rest//,/;}
-    fi
-    cutstart='\['
-    color='\e['$args'm'
-    cutstop='\]'
-    echo -ne $cutstart$color$cutstop
+    local fg=$1
+    shift
+    local bg=$1
+    shift
+    local modifiers=$(bashline_perform_modifiers $@)
+    local cutstart='\['
+    local color=$(tput setaf $fg; tput setab $bg)
+    local cutstop='\]'
+    echo -ne $cutstart$color$modifiers$cutstop
 }
 
 check () {
@@ -87,7 +92,7 @@ bashline_prompt() {
                     if [ -z "$colorfg" ] ; then
                         separator='  '
                     else
-                        separator='\[\e['$colorfg'm\]  \[\e['$fg'm\]'
+                        separator='\['$(tput setaf $colorfg)'\]  \['$(tput setaf $fg)'\]'
                     fi
                     result=${result//$delimiter/$separator}
                     ;;
@@ -102,10 +107,12 @@ bashline_prompt() {
         fi
     done 
 
-    PS1+="$(bashline_hsep 97 40)\[\e[0m\]"
+    PS1+="$(bashline_hsep 15 0; tput sgr0)"
 }
 
 bashline_config=~/.config/bashline/blocks
+
+init=true
 
 while [[ "$#" > 0 ]] ; do
     key=$1
@@ -114,11 +121,14 @@ while [[ "$#" > 0 ]] ; do
             shift
             bashline_config=$1
             ;;
+        --test)
+            init=false
+            ;;
     esac
     shift
 done
 
-bashline_load_blocks $bashline_config
-
-
-export PROMPT_COMMAND=bashline_prompt
+if $init ; then
+    bashline_load_blocks $bashline_config
+    export PROMPT_COMMAND=bashline_prompt
+fi
