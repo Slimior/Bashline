@@ -19,6 +19,12 @@ bashline_hsep() {
     local arrowset=$cutstart$(tput setaf $bg; tput rev)$cutstop
     local arrow=''
     local arrowend=$cutstart$(tput sgr0; tput setaf $fg; tput setab $bg)$modifiers$cutstop
+    #for some reason ansi escape sequences DO have unbold, but in some
+    #implementations they ALSO mean double underline (dafuq), so the most frequent
+    #solution to that problem is to ignore codes from 20s range altogether
+    #just as tput does. To those solutions I say fuck you, and print proper code 
+    #by myself. 
+    echo -ne '\[\e[21m\]' 
     echo -ne ' '$arrowset$arrow$arrowend
 }
 
