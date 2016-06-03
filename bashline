@@ -1,39 +1,46 @@
 #!/bin/bash
 
+bashline_perform_modifiers() {
+    while [ $# -gt 0 ]; do
+        tput $1
+        shift
+    done
+}
+
 bashline_hsep() {
-    fg=$1
-    bg=$2
-    rest=$3
-    if [ -n "$rest" ] ; then
-        rest=${rest//,/;}
-        rest=";$rest"
-    fi
-    echo -n ' '
-    cutstart='\['
-    cutstop='\]'
-    arrowset=$cutstart'\e['$(( bg - 10 ))';7;21m'$cutstop
-    arrow=''
-    arrowend=$cutstart'\e['$fg';'$bg$rest';27m'$cutstop
-    echo -ne $arrowset$arrow$arrowend
+    local fg=$1
+    shift
+    local bg=$1
+    shift
+    local modifiers=$(bashline_perform_modifiers $@)
+    local cutstart='\['
+    local cutstop='\]'
+    #inverse colors, and set front as new background
+    local arrowset=$cutstart$(tput setaf $bg; tput rev)$cutstop
+    local arrow=''
+    local arrowend=$cutstart$(tput sgr0; tput setaf $fg; tput setab $bg)$modifiers$cutstop
+    #for some reason ansi escape sequences DO have unbold, but in some
+    #implementations they ALSO mean double underline (dafuq), so the most frequent
+    #solution to that problem is to ignore codes from 20s range altogether
+    #just as tput does. To those solutions I say fuck you, and print proper code 
+    #by myself. 
+    #echo -ne '\[\e[21m\]' 
+
+    #EDIT: Well, i decided it's better to just reset everything and set colors from 
+    #scratch, but this pisses mi off so much, that i decided to leave that comment.
+    echo -ne ' '$arrowset$arrow$arrowend
 }
 
 bashline_col() {
-    args=$fg\;$bg
-    if [ -n "$3" ] ; then
-        rest=$3
-        args+=\;${rest//,/;}
-    fi
-    cutstart='\['
-    color='\e['$args'm'
-    cutstop='\]'
-    echo -ne $cutstart$color$cutstop
-}
-
-check () {
-    read temp_var
-    args=$@
-    args=${args//pinput/$temp_var}
-    test $args && echo "$temp_var"
+    local fg=$1
+    shift
+    local bg=$1
+    shift
+    local modifiers=$(bashline_perform_modifiers $@)
+    local cutstart='\['
+    local color=$(tput setaf $fg; tput setab $bg)
+    local cutstop='\]'
+    echo -ne $cutstart$color$modifiers$cutstop
 }
 
 bashline_load_blocks() {
@@ -45,13 +52,13 @@ bashline_load_blocks() {
 
     while read line ; do
         [[ $line == \#* ]] && continue
-        cols=`echo $line | cut -d';' -f1 | xargs`
-        opts=`echo $line | cut -d';' -f2 | xargs`
-        block=`echo "$line" | cut -d';' -f3- `
+        local cols=`echo $line | cut -d';' -f1 | xargs`
+        local opts=`echo $line | cut -d';' -f2 | xargs`
+        local block=`echo "$line" | cut -d';' -f3- `
 
-        fg=`echo "$cols" | cut -d',' -f1`
-        bg=`echo "$cols" | cut -d',' -f2`
-        modif=`echo "$cols" | cut -d',' -f3-`
+        local fg=`echo "$cols" | cut -d',' -f1`
+        local bg=`echo "$cols" | cut -d',' -f2`
+        local modif=`echo "$cols" | cut -d',' -f3-`
 
         bashline_fgs+=("$fg")
         bashline_bgs+=("$bg")
@@ -82,27 +89,28 @@ bashline_prompt() {
         for ind in `seq 0 ${#options[*]}` ; do
             case "${options[ind]}" in
                 split*)
-                    delimiter=`echo "${options[ind]}" | cut -d':' -f2`
-                    colorfg=`echo "${options[ind]}" | cut -d':' -f3`
+                    local delimiter=`echo "${options[ind]}" | cut -d':' -f2`
+                    local colorfg=`echo "${options[ind]}" | cut -d':' -f3`
                     if [ -z "$colorfg" ] ; then
-                        separator='  '
+                        local separator='  '
                     else
-                        separator='\[\e['$colorfg'm\]  \[\e['$fg'm\]'
+                        local separator='\['$(tput setaf $colorfg)'\]  \['$(tput setaf $fg)'\]'
                     fi
-                    result=${result//$delimiter/$separator}
+                    local result=${result//$delimiter/$separator}
                     ;;
             esac
         done
 
+        local resetter='\['"$(tput sgr0 ; tput setaf $fg ; tput setab $bg)"'\]'
 
         if [ -n "$PS1" ] ; then
-            PS1+="$(bashline_hsep $fg $bg "$modif") $result"
+            PS1+="$(bashline_hsep $fg $bg "$modif") $result$resetter"
         else
-            PS1+="$(bashline_col $fg $bg "$modif") $result"
+            PS1+="$(bashline_col $fg $bg "$modif") $result$resetter"
         fi
     done 
 
-    PS1+="$(bashline_hsep 97 40)\[\e[0m\]"
+    PS1+="$(bashline_hsep 15 0)"'\['"$(tput sgr0)"'\]'
 }
 
 bashline_config=~/.config/bashline/blocks
@@ -119,6 +127,4 @@ while [[ "$#" > 0 ]] ; do
 done
 
 bashline_load_blocks $bashline_config
-
-
 export PROMPT_COMMAND=bashline_prompt

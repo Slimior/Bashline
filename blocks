@@ -1,10 +1,10 @@
-#localhost or remote connection?
-97,42,1 ;               ;[ -n "$SSH_TTY" ] && echo $HOSTNAME
-#username, accessed by regural PS1 config \u. additional \ needed :(
-97,44,1 ;               ;\\u
-#git branch, if any present obv
-97,47   ;               ;git branch 2>/dev/null | grep '*' | sed -e 's/*//'
-#current directory, with home switched to '~'. Line is split by soft separators at '/'.
-97,100  ; split:/:37    ;pwd | sed -e "s/${HOME//\\//\\\\/}/~/g"
-#jobs counter, if any present
-97,101  ;               ;jobs | wc -l | check pinput -gt 0
+#if connected remotely, show hostname
+15,2,bold ;               ;[ -n "$SSH_TTY" ] && echo $HOSTNAME
+#show username, using standard PS1 features (same as whoami)
+15,4,bold ;               ;\\u
+#if in repository, show branch
+15,7      ;               ;git branch 2>/dev/null | grep '*' | sed -e 's/*//'
+#show CWD, but replace / with soft separators
+15,8      ;  split:/:7    ;pwd | sed -e "s/${HOME//\\//\\\\/}/~/g"
+#show currently working jobs
+15,9      ;               ;jobs | wc -l | awk '$1 > 0'
