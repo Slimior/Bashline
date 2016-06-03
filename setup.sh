@@ -7,14 +7,15 @@ mkdir -p ~/.config/bashline
 cp blocks ~/.config/bashline/blocks
 
 if [ -e ~/.bashrc ] ; then
-    if grep bashline ~/.bashrc > /dev/null ; then
+    if [ -n "$(grep "bashline" ~/.bashrc)" ] ; then
         echo Bashline already in .bashrc.
     else
         echo Adding bashline to .bashrc.
         echo '. ~/.bashline' >> ~/.bashrc
     fi
 else
-    echo 'No .bashrc found. Please add manually.'
+    echo 'No .bashrc found. Creating.'
+    echo '. ~/.bashline' >> ~/.bashrc
 fi
 
-echo Done. Refresh by running '". ~/.bashline"'
+echo Done. Refresh by running '". ~/.bashline"' or just open new shell.
