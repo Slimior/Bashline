@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo Copying files to default locations.
 
 cp bashline ~/.bashline
