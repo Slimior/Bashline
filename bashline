@@ -24,7 +24,10 @@ bashline_hsep() {
     #solution to that problem is to ignore codes from 20s range altogether
     #just as tput does. To those solutions I say fuck you, and print proper code 
     #by myself. 
-    echo -ne '\[\e[21m\]' 
+    #echo -ne '\[\e[21m\]' 
+
+    #EDIT: Well, i decided it's better to just reset everything and set colors from 
+    #scratch, but this pisses mi off so much, that i decided to leave that comment.
     echo -ne ' '$arrowset$arrow$arrowend
 }
 
@@ -98,11 +101,12 @@ bashline_prompt() {
             esac
         done
 
+        local resetter='\['"$(tput sgr0 ; tput setaf $fg ; tput setab $bg)"'\]'
 
         if [ -n "$PS1" ] ; then
-            PS1+="$(bashline_hsep $fg $bg "$modif") $result"
+            PS1+="$(bashline_hsep $fg $bg "$modif") $result$resetter"
         else
-            PS1+="$(bashline_col $fg $bg "$modif") $result"
+            PS1+="$(bashline_col $fg $bg "$modif") $result$resetter"
         fi
     done 
 

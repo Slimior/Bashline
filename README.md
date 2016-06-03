@@ -29,7 +29,7 @@ Bashline, by default, uses configuration file `~/.config/blocks` which after ins
 
 Each line in config file, unless started with `#`, which is reserved for comments, is a single block in bashline. Exemplary line looks like this:
 
-    15,9,bold      ;               ;jobs | wc -l | awk '$1 > 0'
+    15,9,bold ;  ;jobs | wc -l | awk '$1 > 0'
 
 And it consists of 3 parts separated by semicolons (`;`):
 
