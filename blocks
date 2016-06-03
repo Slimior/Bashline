@@ -1,5 +1,10 @@
+#if connected remotely, show hostname
 15,2,bold ;               ;[ -n "$SSH_TTY" ] && echo $HOSTNAME
+#show username, using standard PS1 features (same as whoami)
 15,4,bold ;               ;\\u
-15,7   ;               ;git branch 2>/dev/null | grep '*' | sed -e 's/*//'
-15,8  ; split:/:7    ;pwd | sed -e "s/${HOME//\\//\\\\/}/~/g"
-15,9  ;               ;jobs | wc -l | check pinput -gt 0
+#if in repository, show branch
+15,7      ;               ;git branch 2>/dev/null | grep '*' | sed -e 's/*//'
+#show CWD, but replace / with soft separators
+15,8      ;  split:/:7    ;pwd | sed -e "s/${HOME//\\//\\\\/}/~/g"
+#show currently working jobs
+15,9      ;               ;jobs | wc -l | awk '$1 > 0'

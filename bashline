@@ -40,13 +40,6 @@ bashline_col() {
     echo -ne $cutstart$color$modifiers$cutstop
 }
 
-check () {
-    read temp_var
-    args=$@
-    args=${args//pinput/$temp_var}
-    test $args && echo "$temp_var"
-}
-
 bashline_load_blocks() {
     bashline_fgs=()
     bashline_bgs=()
@@ -56,13 +49,13 @@ bashline_load_blocks() {
 
     while read line ; do
         [[ $line == \#* ]] && continue
-        cols=`echo $line | cut -d';' -f1 | xargs`
-        opts=`echo $line | cut -d';' -f2 | xargs`
-        block=`echo "$line" | cut -d';' -f3- `
+        local cols=`echo $line | cut -d';' -f1 | xargs`
+        local opts=`echo $line | cut -d';' -f2 | xargs`
+        local block=`echo "$line" | cut -d';' -f3- `
 
-        fg=`echo "$cols" | cut -d',' -f1`
-        bg=`echo "$cols" | cut -d',' -f2`
-        modif=`echo "$cols" | cut -d',' -f3-`
+        local fg=`echo "$cols" | cut -d',' -f1`
+        local bg=`echo "$cols" | cut -d',' -f2`
+        local modif=`echo "$cols" | cut -d',' -f3-`
 
         bashline_fgs+=("$fg")
         bashline_bgs+=("$bg")
@@ -93,14 +86,14 @@ bashline_prompt() {
         for ind in `seq 0 ${#options[*]}` ; do
             case "${options[ind]}" in
                 split*)
-                    delimiter=`echo "${options[ind]}" | cut -d':' -f2`
-                    colorfg=`echo "${options[ind]}" | cut -d':' -f3`
+                    local delimiter=`echo "${options[ind]}" | cut -d':' -f2`
+                    local colorfg=`echo "${options[ind]}" | cut -d':' -f3`
                     if [ -z "$colorfg" ] ; then
-                        separator='  '
+                        local separator='  '
                     else
-                        separator='\['$(tput setaf $colorfg)'\]  \['$(tput setaf $fg)'\]'
+                        local separator='\['$(tput setaf $colorfg)'\]  \['$(tput setaf $fg)'\]'
                     fi
-                    result=${result//$delimiter/$separator}
+                    local result=${result//$delimiter/$separator}
                     ;;
             esac
         done
@@ -118,8 +111,6 @@ bashline_prompt() {
 
 bashline_config=~/.config/bashline/blocks
 
-init=true
-
 while [[ "$#" > 0 ]] ; do
     key=$1
     case $key in
@@ -127,14 +118,9 @@ while [[ "$#" > 0 ]] ; do
             shift
             bashline_config=$1
             ;;
-        --test)
-            init=false
-            ;;
     esac
     shift
 done
 
-if $init ; then
-    bashline_load_blocks $bashline_config
-    export PROMPT_COMMAND=bashline_prompt
-fi
+bashline_load_blocks $bashline_config
+export PROMPT_COMMAND=bashline_prompt
