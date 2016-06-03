@@ -33,9 +33,9 @@ Each line in config file, unless started with `#`, which is reserved for comment
 
 And it consists of 3 parts separated by semicolons (`;`):
 
-- formatting instructions: 2 numbers - foreground and background colors of block, and blace for additional `tput`-named ANSI decorations, such as `bold` or `underlined` 
+- formatting instructions: 2 numbers - foreground and background colors of block, and place for additional `tput`-named ANSI decorations, such as `bold` or `underlined` 
 
-- modifiers: currently there is only one modifier - `split` which is described below
+- modifiers: currently there is only one modifier - `split`, which is described below
 
 - command: anything after the second semicolon will be evaluated by bash, and the result (unless empty) will be displayed as a segment.
 
